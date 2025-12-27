@@ -99,19 +99,39 @@ class DraftTracker {
             }
 
             if (data && data.length > 0) {
-                // Convert Supabase data to our format
-                const supabasePlayers = data.map(player => ({
-                    id: player.id.toString(),
-                    name: player.name || '',
-                    position: player.position || '',
-                    mlbTeam: player.team || '',
-                    notes: player.notes || '',
-                    fantasyOwner: player.owner_id || '',
-                    drafted: player.drafted || false,
-                    draftNotes: player.draft_notes || '',
-                    addedDate: player.created_at || new Date().toISOString()
-                }));
+                console.log('📥 Loading', data.length, 'players from Supabase');
 
+                // Convert Supabase data to our format and ensure valid IDs
+                const supabasePlayers = data.map(player => {
+                    let playerId = player.id.toString();
+
+                    // Check if Supabase ID is invalid (team name instead of UUID)
+                    const isInvalidId = !playerId ||
+                        typeof playerId !== 'string' ||
+                        playerId.length < 20 ||  // UUIDs are longer than team names
+                        !playerId.includes('-') ||  // UUIDs have hyphens
+                        playerId.match(/^[a-zA-Z]+$/);  // Team names are just letters
+
+                    if (isInvalidId) {
+                        console.log('🚨 INVALID ID from Supabase:', player.name, 'ID:', playerId, 'length:', playerId.length);
+                    } else {
+                        console.log('✅ Valid ID from Supabase:', player.name, 'ID:', playerId.substring(0, 8) + '...');
+                    }
+
+                    return {
+                        id: playerId,
+                        name: player.name || '',
+                        position: player.position || '',
+                        mlbTeam: player.team || '',
+                        notes: player.notes || '',
+                        fantasyOwner: player.owner_id || '',
+                        drafted: player.drafted || false,
+                        draftNotes: player.draft_notes || '',
+                        addedDate: player.created_at || new Date().toISOString()
+                    };
+                });
+
+                console.log('🔄 Starting merge with', supabasePlayers.length, 'Supabase players');
                 // Merge with existing local data, preserving local draft info
                 this.mergeSupabaseData(supabasePlayers);
 
@@ -137,6 +157,18 @@ class DraftTracker {
 
         // Merge data using ID matching
         supabasePlayers.forEach(supabasePlayer => {
+            // Ensure Supabase player has valid ID
+            const isInvalidId = !supabasePlayer.id ||
+                typeof supabasePlayer.id !== 'string' ||
+                supabasePlayer.id.length < 20 ||  // UUIDs are longer than team names
+                !supabasePlayer.id.includes('-') ||  // UUIDs have hyphens
+                supabasePlayer.id.match(/^[a-zA-Z]+$/);  // Team names are just letters
+
+            if (isInvalidId) {
+                console.log('🔧 Supabase player has invalid ID, skipping merge:', supabasePlayer.name, supabasePlayer.id);
+                return; // Skip merging players with invalid IDs
+            }
+
             const existingPlayer = existingPlayerMap.get(supabasePlayer.id);
 
             if (existingPlayer) {
