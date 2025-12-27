@@ -1117,20 +1117,29 @@ class DraftTracker {
         }
     }
 
-    // Ensure all players have proper UUIDs (convert old timestamp IDs)
+    // Ensure all players have proper UUIDs (convert any invalid IDs)
     ensureAllPlayersHaveUUIDs() {
         let updated = false;
         this.players.forEach(player => {
-            if (!player.id || typeof player.id === 'string' && /^\d+$/.test(player.id)) {
-                console.log('Converting timestamp ID to UUID for player:', player.name);
+            const isInvalidId = !player.id ||
+                typeof player.id !== 'string' ||
+                player.id.length < 20 ||  // UUIDs are longer than team names
+                !player.id.includes('-') ||  // UUIDs have hyphens
+                player.id.match(/^[a-zA-Z]+$/);  // Team names are just letters
+
+            if (isInvalidId) {
+                console.log('🔧 Converting invalid ID for player:', player.name, 'from:', player.id);
                 player.id = crypto.randomUUID();
+                console.log('✅ New UUID:', player.id);
                 updated = true;
             }
         });
 
         if (updated) {
             this.saveToStorage();
-            console.log('Converted old timestamp IDs to UUIDs');
+            console.log('💾 Saved converted IDs to storage');
+        } else {
+            console.log('✅ All player IDs are already valid UUIDs');
         }
     }
 
