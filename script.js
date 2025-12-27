@@ -240,14 +240,28 @@ class DraftTracker {
                     console.log('✅ ID is already valid for player:', player.name);
                 }
 
-                // DEBUG: Log what we're sending
+                // Only send owner_id if it's a valid UUID, otherwise send null
+                let ownerId = null;
+                if (player.fantasyOwner) {
+                    const isValidOwnerId = typeof player.fantasyOwner === 'string' &&
+                        player.fantasyOwner.length >= 20 &&
+                        player.fantasyOwner.includes('-') &&
+                        !player.fantasyOwner.match(/^[a-zA-Z]+$/); // Not just letters
+
+                    if (isValidOwnerId) {
+                        ownerId = player.fantasyOwner;
+                    } else {
+                        console.log('⚠️ Invalid owner_id for player:', player.name, 'value:', player.fantasyOwner, '- sending null');
+                    }
+                }
+
                 const dataToSend = {
                     id: playerId,
                     name: player.name,
                     position: player.position || null,
                     team: player.mlbTeam || null,
                     notes: player.notes || null,
-                    owner_id: player.fantasyOwner || null,
+                    owner_id: ownerId,
                     drafted: player.drafted || false,
                     draft_notes: player.draftNotes || null,
                     updated_at: new Date().toISOString()
