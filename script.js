@@ -181,17 +181,18 @@ class DraftTracker {
             const supabaseData = this.players.map(player => {
                 // Ensure ID is a valid UUID - convert any invalid IDs
                 let playerId = player.id;
-                if (!playerId ||
+                const isInvalidId = !playerId ||
                     typeof playerId !== 'string' ||
                     playerId.length < 20 ||  // UUIDs are longer than team names
                     !playerId.includes('-') ||  // UUIDs have hyphens
-                    playerId.match(/^[a-zA-Z]+$/)) {  // Team names are just letters
+                    playerId.match(/^[a-zA-Z]+$/);  // Team names are just letters
 
-                    console.log('Fixing invalid ID for player:', player.name, 'old ID:', playerId);
+                if (isInvalidId) {
+                    console.log('🔧 Fixing invalid ID for player:', player.name, 'old ID:', playerId);
                     playerId = crypto.randomUUID();
                     // Update the local player object too
                     player.id = playerId;
-                    console.log('New UUID:', playerId);
+                    console.log('✅ New UUID:', playerId);
                 }
 
                 return {
