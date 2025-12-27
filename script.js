@@ -181,11 +181,22 @@ class DraftTracker {
             const supabaseData = this.players.map(player => {
                 // Ensure ID is a valid UUID - convert any invalid IDs
                 let playerId = player.id;
+                console.log('📋 Processing player:', player.name, 'ID:', playerId, 'length:', playerId?.length);
+
                 const isInvalidId = !playerId ||
                     typeof playerId !== 'string' ||
                     playerId.length < 20 ||  // UUIDs are longer than team names
                     !playerId.includes('-') ||  // UUIDs have hyphens
                     playerId.match(/^[a-zA-Z]+$/);  // Team names are just letters
+
+                console.log('🔍 isInvalidId check:', {
+                    notPlayerId: !playerId,
+                    notString: typeof playerId !== 'string',
+                    tooShort: playerId?.length < 20,
+                    noHyphen: !playerId?.includes('-'),
+                    onlyLetters: playerId?.match(/^[a-zA-Z]+$/),
+                    result: isInvalidId
+                });
 
                 if (isInvalidId) {
                     console.log('🔧 Fixing invalid ID for player:', player.name, 'old ID:', playerId);
@@ -193,6 +204,8 @@ class DraftTracker {
                     // Update the local player object too
                     player.id = playerId;
                     console.log('✅ New UUID:', playerId);
+                } else {
+                    console.log('✅ ID is already valid for player:', player.name);
                 }
 
                 return {
