@@ -240,7 +240,8 @@ class DraftTracker {
                     console.log('✅ ID is already valid for player:', player.name);
                 }
 
-                return {
+                // DEBUG: Log what we're sending
+                const dataToSend = {
                     id: playerId,
                     name: player.name,
                     position: player.position || null,
@@ -251,6 +252,9 @@ class DraftTracker {
                     draft_notes: player.draftNotes || null,
                     updated_at: new Date().toISOString()
                 };
+
+                console.log('📤 Sending to Supabase:', player.name, 'ID:', dataToSend.id, 'owner_id:', dataToSend.owner_id);
+                return dataToSend;
             });
 
             // Use individual operations to handle duplicates properly
