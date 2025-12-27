@@ -27,6 +27,7 @@ class DraftTracker {
     init() {
         this.initializeSupabase();
         this.loadFromStorage();
+        this.ensureAllPlayersHaveUUIDs(); // Ensure UUIDs before any sync
         this.bindEvents();
         this.updateOwnerSelect();
         this.setupRealtimeSync();
@@ -274,7 +275,8 @@ class DraftTracker {
         this.players.push(player);
         this.saveToStorage();
         this.render();
-        this.autoSyncToSupabase(); // Real-time sync
+        // Temporarily disable auto-sync for testing
+        // this.autoSyncToSupabase();
         return player;
     }
 
@@ -284,7 +286,8 @@ class DraftTracker {
             this.players[playerIndex] = { ...this.players[playerIndex], ...updates };
             this.saveToStorage();
             this.render();
-            this.autoSyncToSupabase(); // Real-time sync for inline edits
+            // Temporarily disable auto-sync for testing
+            // this.autoSyncToSupabase();
         }
     }
 
@@ -306,7 +309,8 @@ class DraftTracker {
             player.draftedDate = new Date().toISOString();
             this.saveToStorage();
             this.render();
-            this.autoSyncToSupabase(); // Real-time sync
+            // Temporarily disable auto-sync for testing
+            // this.autoSyncToSupabase();
         }
     }
 
@@ -319,7 +323,8 @@ class DraftTracker {
             delete player.draftedDate;
             this.saveToStorage();
             this.render();
-            this.autoSyncToSupabase(); // Real-time sync
+            // Temporarily disable auto-sync for testing
+            // this.autoSyncToSupabase();
         }
     }
 
@@ -1089,6 +1094,23 @@ class DraftTracker {
             this.saveToStorage();
             this.render();
             console.log('Deleted player from real-time sync:', deletedPlayer.name);
+        }
+    }
+
+    // Ensure all players have proper UUIDs (convert old timestamp IDs)
+    ensureAllPlayersHaveUUIDs() {
+        let updated = false;
+        this.players.forEach(player => {
+            if (!player.id || typeof player.id === 'string' && /^\d+$/.test(player.id)) {
+                console.log('Converting timestamp ID to UUID for player:', player.name);
+                player.id = crypto.randomUUID();
+                updated = true;
+            }
+        });
+
+        if (updated) {
+            this.saveToStorage();
+            console.log('Converted old timestamp IDs to UUIDs');
         }
     }
 
