@@ -594,7 +594,7 @@ class DraftTracker {
             if (player.drafted) {
                 row.classList.add('drafted');
                 // Apply team gradient background
-                const teamColors = this.getTeamColors(player.fantasyOwner);
+                const teamColors = this.getOwnerColors(player.fantasyOwner);
                 if (teamColors) {
                     row.style.background = teamColors;
                     row.style.color = '#ffffff';
@@ -623,7 +623,7 @@ class DraftTracker {
                 </td>
                 <td>
                     ${player.drafted ?
-                        `<span class="fantasy-owner editable" data-field="fantasyOwner" data-id="${player.id}">${this.getTeamDisplay(player.fantasyOwner)}</span>` :
+                        `<span class="fantasy-owner editable" data-field="fantasyOwner" data-id="${player.id}">${this.getOwnerDisplay(player.fantasyOwner)}</span>` :
                         '<span class="draft-status available">Available</span>'
                     }
                 </td>
@@ -1377,6 +1377,32 @@ class DraftTracker {
         window.open(searchUrl, '_blank');
     }
 
+    // Get owner colors for row backgrounds - converts UUID to team name and gets colors
+    getOwnerColors(ownerId) {
+        if (!ownerId) return null;
+
+        // Check if it's a UUID (owner ID) or a team name (backward compatibility)
+        const isUUID = typeof ownerId === 'string' &&
+            ownerId.length >= 20 &&
+            ownerId.includes('-') &&
+            !ownerId.match(/^[a-zA-Z]+$/);
+
+        let teamName = ownerId; // Default to the input
+
+        if (isUUID) {
+            // Look up the team name from the owners table
+            const owner = this.owners.find(o => o.id === ownerId);
+            if (owner) {
+                teamName = owner.name;
+            } else {
+                return null; // No colors if owner not found
+            }
+        }
+
+        // Use existing team colors logic
+        return this.getTeamColors(teamName);
+    }
+
     // Get team gradient colors for row backgrounds
     getTeamColors(teamName) {
         if (!teamName) return null;
@@ -1418,6 +1444,41 @@ class DraftTracker {
         };
 
         return teams[teamNameLower] || null;
+    }
+
+    // Owner display functionality - converts UUID to team name and displays with styling
+    getOwnerDisplay(ownerId) {
+        if (!ownerId) return '';
+
+        console.log('getOwnerDisplay called with:', ownerId, 'owners loaded:', this.owners.length);
+
+        // Check if it's a UUID (owner ID) or a team name (backward compatibility)
+        const isUUID = typeof ownerId === 'string' &&
+            ownerId.length >= 20 &&
+            ownerId.includes('-') &&
+            !ownerId.match(/^[a-zA-Z]+$/);
+
+        console.log('isUUID check:', isUUID, 'length:', ownerId?.length, 'includes -:', ownerId?.includes('-'));
+
+        let teamName = ownerId; // Default to the input
+
+        if (isUUID) {
+            // Look up the team name from the owners table
+            const owner = this.owners.find(o => o.id === ownerId);
+            console.log('Owner lookup result:', owner);
+            if (owner) {
+                teamName = owner.name;
+                console.log('Found team name:', teamName);
+            } else {
+                console.warn('Owner UUID not found in owners table:', ownerId, 'available owners:', this.owners.map(o => ({id: o.id.substring(0,8)+'...', name: o.name})));
+                return this.escapeHtml(ownerId); // Show UUID if not found
+            }
+        }
+
+        // Use existing team display logic
+        const result = this.getTeamDisplay(teamName);
+        console.log('Final display result:', result);
+        return result;
     }
 
     // Team display functionality
@@ -1756,7 +1817,7 @@ class DraftTracker {
                             <div class="player-details">
                                 <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
                                 <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
-                                ${player.drafted ? `<span class="fantasy-owner">${this.getTeamDisplay(player.fantasyOwner)}</span>` : '<span class="draft-status available">Available</span>'}
+                                ${player.drafted ? `<span class="fantasy-owner">${this.getOwnerDisplay(player.fantasyOwner)}</span>` : '<span class="draft-status available">Available</span>'}
                             </div>
                             ${player.notes ? `<div class="notes">${this.escapeHtml(player.notes)}</div>` : ''}
                         </div>
