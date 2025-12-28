@@ -609,7 +609,7 @@ class DraftTracker {
 
             row.innerHTML = `
                 <td>
-                    <div class="player-name ${nameClass}" data-field="name" data-id="${player.id}">
+                    <div class="player-name ${nameClass}" data-field="name" data-id="${player.id}" data-player-name="${this.escapeHtml(player.name)}">
                         <span class="star-icon ${player.starred ? 'starred' : ''}" data-id="${player.id}" title="${player.starred ? 'Unstar player' : 'Star player'}">${player.starred ? '⭐' : '☆'}</span>
                         ${this.escapeHtml(player.name)}
                         ${this.getExternalLinks(player)}
@@ -910,10 +910,8 @@ class DraftTracker {
                     }
 
                     e.stopPropagation();
-                    const playerName = elem.textContent.trim();
-                    // Remove the external links part from the text
-                    const cleanName = playerName.split('\n')[0].trim();
-                    this.openTwitter(cleanName);
+                    const playerName = elem.dataset.playerName || elem.textContent.trim();
+                    this.openTwitter(playerName);
                 });
                 elem.style.cursor = 'pointer';
             }
