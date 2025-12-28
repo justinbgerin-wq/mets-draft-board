@@ -904,6 +904,11 @@ class DraftTracker {
             // Only add click handler if it's not already editable (to avoid conflicts)
             if (!elem.classList.contains('editable')) {
                 elem.addEventListener('click', (e) => {
+                    // Don't open Twitter if clicking on star icon
+                    if (e.target.classList.contains('star-icon')) {
+                        return; // Let star icon handle its own click
+                    }
+
                     e.stopPropagation();
                     const playerName = elem.textContent.trim();
                     // Remove the external links part from the text
