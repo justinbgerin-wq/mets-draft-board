@@ -36,7 +36,7 @@ class DraftTracker {
         this.updateOwnerSelect();
         this.setupRealtimeSync();
         this.render();
-        console.log('DraftTracker initialized');
+        console.log('DraftTracker initialized - owners loaded:', this.owners.length);
     }
 
     // Supabase integration
@@ -822,6 +822,12 @@ class DraftTracker {
             if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
                 e.preventDefault();
                 this.showAddPlayerModal();
+            }
+
+            // Ctrl/Cmd + S for backup to Supabase (save/sync)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                this.backupToSupabase();
             }
 
             // Escape to close modals and close expanded notes
