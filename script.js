@@ -21,11 +21,15 @@ class DraftTracker {
         this.hideDraftedInRankings = false;
         this.rankingsSearchTerm = '';
 
+        // Owners state
+        this.owners = []; // Array of {id: uuid, name: string}
+
         this.init();
     }
 
-    init() {
+    async init() {
         this.initializeSupabase();
+        await this.loadOwners(); // Load owners first
         this.loadFromStorage();
         this.ensureAllPlayersHaveUUIDs(); // Ensure UUIDs before any sync
         this.bindEvents();
@@ -59,6 +63,33 @@ class DraftTracker {
         const backupBtn = document.getElementById('backupToSupabaseBtn');
         if (loadBtn) loadBtn.disabled = true;
         if (backupBtn) backupBtn.disabled = true;
+    }
+
+    // Load owners from Supabase
+    async loadOwners() {
+        if (!this.supabase) {
+            console.warn('Supabase not available for loading owners');
+            return;
+        }
+
+        try {
+            console.log('📥 Loading owners from Supabase...');
+            const { data, error } = await this.supabase
+                .from('owners')
+                .select('id, name')
+                .order('name');
+
+            if (error) {
+                console.error('Error loading owners:', error);
+                this.owners = [];
+            } else {
+                this.owners = data || [];
+                console.log('✅ Loaded', this.owners.length, 'owners:', this.owners.map(o => o.name));
+            }
+        } catch (error) {
+            console.error('Error loading owners:', error);
+            this.owners = [];
+        }
     }
 
     setSyncStatus(message, type = '') {
@@ -1035,24 +1066,45 @@ class DraftTracker {
 
     setupOwnerAutocomplete() {
         const input = document.getElementById('fantasyOwner');
-        const owners = this.getUniqueOwners();
 
-        // Simple datalist for autocomplete
-        let datalist = document.getElementById('ownerDatalist');
-        if (!datalist) {
-            datalist = document.createElement('datalist');
-            datalist.id = 'ownerDatalist';
-            input.parentNode.appendChild(datalist);
+        // Create a select dropdown instead of datalist for better control
+        let select = document.getElementById('fantasyOwnerSelect');
+        if (!select) {
+            select = document.createElement('select');
+            select.id = 'fantasyOwnerSelect';
+            select.className = 'form-control';
+            input.parentNode.insertBefore(select, input);
+            input.style.display = 'none'; // Hide the original input
+
+            // Update form submission to use the select value
+            select.addEventListener('change', (e) => {
+                input.value = e.target.value; // Store UUID in hidden input
+            });
         }
 
-        datalist.innerHTML = '';
-        owners.forEach(owner => {
+        // Clear existing options
+        select.innerHTML = '<option value="">Select Owner...</option>';
+
+        // Add owners from database
+        this.owners.forEach(owner => {
             const option = document.createElement('option');
-            option.value = owner;
-            datalist.appendChild(option);
+            option.value = owner.id; // Store UUID as value
+            option.textContent = owner.name; // Display name
+            select.appendChild(option);
         });
 
-        input.setAttribute('list', 'ownerDatalist');
+        // Also add any existing drafted owners that might not be in the database yet
+        const existingOwners = this.getUniqueOwners();
+        existingOwners.forEach(ownerName => {
+            // Check if this owner name is already in the select (by name)
+            const alreadyExists = Array.from(select.options).some(opt => opt.textContent === ownerName);
+            if (!alreadyExists && ownerName.trim()) {
+                const option = document.createElement('option');
+                option.value = ownerName; // Keep existing behavior for backward compatibility
+                option.textContent = ownerName;
+                select.appendChild(option);
+            }
+        });
     }
 
     // Real-time sync setup
