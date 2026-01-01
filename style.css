@@ -798,19 +798,16 @@ select:focus, input[type="text"]:focus, textarea:focus {
 }
 
 /* Player cards */
-.player-card-row,
-.twitter-card-row {
+.player-card-row {
     background-color: #1a1a1a;
     border-top: 2px solid #444;
 }
 
-.player-card-cell,
-.twitter-card-cell {
+.player-card-cell {
     padding: 0;
 }
 
-.player-card,
-.twitter-card {
+.player-card {
     background: #1e1e1e;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.4);
@@ -819,8 +816,7 @@ select:focus, input[type="text"]:focus, textarea:focus {
     border: 1px solid #333;
 }
 
-.player-card-header,
-.twitter-card-header {
+.player-card-header {
     background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
     padding: 16px 20px;
     display: flex;
@@ -829,16 +825,14 @@ select:focus, input[type="text"]:focus, textarea:focus {
     border-bottom: 1px solid #444;
 }
 
-.player-card-info h3,
-.twitter-card-info h3 {
+.player-card-info h3 {
     margin: 0 0 8px 0;
     color: #ffffff;
     font-size: 18px;
     font-weight: 600;
 }
 
-.player-card-details,
-.twitter-card-details {
+.player-card-details {
     display: flex;
     gap: 12px;
     align-items: center;
@@ -860,14 +854,7 @@ select:focus, input[type="text"]:focus, textarea:focus {
     font-size: 12px;
 }
 
-.twitter-card-details .twitter-handle {
-    color: #1da1f2;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.card-close-btn,
-.twitter-card-close-btn {
+.card-close-btn {
     background: #666;
     color: white;
     border: none;
@@ -884,20 +871,17 @@ select:focus, input[type="text"]:focus, textarea:focus {
     flex-shrink: 0;
 }
 
-.card-close-btn:hover,
-.twitter-card-close-btn:hover {
+.card-close-btn:hover {
     background: #888;
 }
 
-.player-card-content,
-.twitter-card-content {
+.player-card-content {
     position: relative;
     background: #ffffff;
     min-height: 400px;
 }
 
-.player-card-content iframe,
-.twitter-card-content iframe {
+.player-card-content iframe {
     border: none;
     width: 100%;
     min-height: 600px;
@@ -906,40 +890,34 @@ select:focus, input[type="text"]:focus, textarea:focus {
 
 /* Mobile card styles */
 @media (max-width: 768px) {
-    .player-card,
-    .twitter-card {
+    .player-card {
         margin: 12px 8px;
         border-radius: 8px;
     }
 
-    .player-card-header,
-    .twitter-card-header {
+    .player-card-header {
         padding: 12px 16px;
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
     }
 
-    .player-card-info h3,
-    .twitter-card-info h3 {
+    .player-card-info h3 {
         font-size: 16px;
     }
 
-    .player-card-details,
-    .twitter-card-details {
+    .player-card-details {
         gap: 8px;
     }
 
-    .card-close-btn,
-    .twitter-card-close-btn {
+    .card-close-btn {
         align-self: flex-end;
         width: 28px;
         height: 28px;
         font-size: 16px;
     }
 
-    .player-card-content iframe,
-    .twitter-card-content iframe {
+    .player-card-content iframe {
         min-height: 500px;
     }
 }
