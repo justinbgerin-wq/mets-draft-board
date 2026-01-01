@@ -1830,6 +1830,11 @@ class DraftTracker {
         // Remove any existing tooltip
         this.hidePlayerTooltip();
 
+        // Try Fangraphs first (more reliable URLs), fallback to Baseball Reference
+        const fangraphsUrl = this.getFangraphsPlayerUrl(playerName);
+        const statsUrl = fangraphsUrl || `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(playerName)}`;
+        const sourceName = fangraphsUrl ? 'Fangraphs' : 'Baseball Reference';
+
         // Create tooltip container
         const tooltip = document.createElement('div');
         tooltip.className = 'player-tooltip';
@@ -1840,12 +1845,12 @@ class DraftTracker {
             </div>
             <div class="player-tooltip-content">
                 <iframe
-                    src="https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(playerName)}"
+                    src="${statsUrl}"
                     frameborder="0"
                     width="100%"
                     height="400"
                     loading="lazy"
-                    title="Baseball Reference - ${this.escapeHtml(playerName)}"
+                    title="${sourceName} - ${this.escapeHtml(playerName)}"
                 ></iframe>
             </div>
         `;
