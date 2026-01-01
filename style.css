@@ -886,6 +886,9 @@ select:focus, input[type="text"]:focus, textarea:focus {
     width: 100%;
     min-height: 600px;
     display: block;
+    /* Mobile optimization */
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
 }
 
 /* Mobile card styles */
@@ -917,8 +920,25 @@ select:focus, input[type="text"]:focus, textarea:focus {
         font-size: 16px;
     }
 
+    .player-card-content {
+        min-height: 70vh; /* Use viewport height for better mobile experience */
+    }
+
     .player-card-content iframe {
-        min-height: 500px;
+        min-height: 70vh; /* Match container height */
+        height: 70vh; /* Fixed height for mobile scrolling */
+    }
+}
+
+/* Extra mobile optimization */
+@media (max-width: 480px) {
+    .player-card-content {
+        min-height: 80vh;
+    }
+
+    .player-card-content iframe {
+        min-height: 80vh;
+        height: 80vh;
     }
 }
 

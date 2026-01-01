@@ -1779,6 +1779,7 @@ class DraftTracker {
                             height="600"
                             loading="lazy"
                             title="Baseball Reference - ${this.escapeHtml(player.name)}"
+                            style="max-width: 100%; width: 100%; height: 600px; border: none; overflow: auto; -webkit-overflow-scrolling: touch;"
                         ></iframe>
                     </div>
                 </div>
