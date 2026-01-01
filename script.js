@@ -1384,8 +1384,77 @@ class DraftTracker {
     }
 
     openTwitter(playerName) {
-        const searchUrl = `https://twitter.com/search?q=${encodeURIComponent(playerName)}&src=typed_query`;
-        window.open(searchUrl, '_blank');
+        // Instead of opening new window, create an expandable Twitter iframe card
+        this.toggleTwitterCard(playerName);
+    }
+
+    // Twitter card expansion functionality
+    toggleTwitterCard(playerName) {
+        const existingCard = document.querySelector(`.twitter-card[data-player-name="${this.escapeHtml(playerName)}"]`);
+
+        // If card is already expanded, collapse it
+        if (existingCard) {
+            existingCard.remove();
+            return;
+        }
+
+        // Close any other expanded cards first
+        document.querySelectorAll('.player-card, .twitter-card').forEach(card => card.remove());
+
+        // Find the player row that contains the Twitter link
+        const twitterLink = document.querySelector(`.twitter-link[onclick*="${this.escapeHtml(playerName)}"]`);
+        if (!twitterLink) return;
+
+        const playerRow = twitterLink.closest('tr');
+        if (!playerRow) return;
+
+        // Create the expandable Twitter card
+        const cardRow = document.createElement('tr');
+        cardRow.className = 'twitter-card-row';
+        cardRow.innerHTML = `
+            <td colspan="6" class="twitter-card-cell">
+                <div class="twitter-card" data-player-name="${this.escapeHtml(playerName)}">
+                    <div class="twitter-card-header">
+                        <div class="twitter-card-info">
+                            <h3>${this.escapeHtml(playerName)} on Twitter</h3>
+                            <div class="twitter-card-details">
+                                <span class="twitter-handle">@${this.escapeHtml(playerName.toLowerCase().replace(/\s+/g, ''))}</span>
+                            </div>
+                        </div>
+                        <button class="twitter-card-close-btn" onclick="window.draftTracker.closeTwitterCard('${this.escapeHtml(playerName)}')">×</button>
+                    </div>
+                    <div class="twitter-card-content">
+                        <iframe
+                            src="https://twitter.com/search?q=${encodeURIComponent(playerName)}&src=typed_query&embed=true"
+                            frameborder="0"
+                            width="100%"
+                            height="600"
+                            loading="lazy"
+                            title="Twitter - ${this.escapeHtml(playerName)}"
+                        ></iframe>
+                    </div>
+                </div>
+            </td>
+        `;
+
+        // Insert the card row after the player row
+        playerRow.parentNode.insertBefore(cardRow, playerRow.nextSibling);
+
+        // Scroll the card into view
+        setTimeout(() => {
+            cardRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+
+    closeTwitterCard(playerName) {
+        // Find and remove the specific Twitter card row
+        const cardRow = document.querySelector('.twitter-card-row');
+        if (cardRow) {
+            console.log('Removing Twitter card for player:', playerName);
+            cardRow.remove();
+        } else {
+            console.warn('No Twitter card row found to remove for player:', playerName);
+        }
     }
 
     // Get owner colors for row backgrounds - converts UUID to team name and gets colors
