@@ -253,7 +253,9 @@ select:focus, input[type="text"]:focus, textarea:focus {
     background: #1e1e1e;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
 }
 
 #playersTable {
@@ -568,32 +570,259 @@ select:focus, input[type="text"]:focus, textarea:focus {
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
+    body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
     }
-    
+
+    .container {
+        padding: 8px;
+        margin: 0;
+        max-width: 100%;
+    }
+
+    header {
+        padding: 15px 10px;
+        margin-bottom: 10px;
+    }
+
+    header h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
     .controls {
         flex-direction: column;
+        gap: 10px;
         align-items: stretch;
     }
-    
+
+    /* Make buttons larger for touch */
+    .btn {
+        padding: 12px 20px;
+        font-size: 16px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 14px;
+        min-height: 36px;
+    }
+
+    /* Improve form controls for mobile */
+    select, input[type="text"], textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px;
+        min-height: 44px;
+    }
+
+    #searchInput {
+        font-size: 16px;
+        padding: 12px;
+        min-height: 44px;
+    }
+
+    .search-section {
+        padding: 12px 10px;
+        margin-bottom: 10px;
+    }
+
     .table-controls {
         flex-direction: column;
+        gap: 8px;
+        padding: 12px 10px;
+        margin-bottom: 10px;
     }
-    
+
+    /* Table improvements for mobile */
+    #playersTable {
+        font-size: 13px;
+        min-width: 800px; /* Ensure horizontal scroll */
+    }
+
+    #playersTable th,
+    #playersTable td {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+
+    /* Make table scrollable on mobile */
+    .table-container {
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -8px;
+        border-radius: 0;
+    }
+
+    /* Improve touch targets */
+    .star-icon {
+        font-size: 20px;
+        padding: 4px;
+        min-width: 28px;
+        min-height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .external-link {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    /* Modal improvements for mobile */
+    .modal-content {
+        margin: 10px auto;
+        padding: 20px;
+        width: calc(100% - 20px);
+        max-width: none;
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal {
+        padding: 10px;
+    }
+
+    .close {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+    }
+
+    /* Form improvements */
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    /* Improve notes expansion on mobile */
+    .notes.expanded {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: calc(100vw - 40px);
+        max-height: calc(100vh - 40px);
+        z-index: 2000;
+        overflow-y: auto;
+    }
+
+    /* Rankings view mobile improvements */
+    .rankings-controls {
+        padding: 15px 10px;
+    }
+
+    .rankings-filters {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .rankings-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .rankings-actions {
+        justify-content: center;
+    }
+
+    .ranking-item {
+        padding: 15px 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .ranking-number {
+        align-self: flex-start;
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+
+    .ranking-handle {
+        align-self: flex-end;
+        margin-left: 0;
+        margin-top: 8px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .player-name:hover {
+        color: #ffffff;
+    }
+
+    #playersTable tbody tr:hover {
+        background-color: inherit;
+    }
+
+    .btn:hover {
+        background-color: inherit;
+    }
+
+    .star-icon:hover {
+        transform: none;
+    }
+
+    /* Ensure proper scrolling */
+    main {
+        overflow-x: hidden;
+    }
+
+    /* Fix sticky headers on mobile */
+    #playersTable th {
+        position: relative; /* Remove sticky on mobile to prevent issues */
+        top: auto;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+
+    header {
+        padding: 10px 5px;
+    }
+
+    .modal-content {
+        padding: 15px;
+        width: calc(100% - 10px);
+    }
+
     #playersTable {
         font-size: 12px;
     }
-    
+
     #playersTable th,
     #playersTable td {
-        padding: 8px;
+        padding: 8px 6px;
     }
-    
-    .modal-content {
-        margin: 5% auto;
-        padding: 20px;
-        width: 95%;
+
+    .ranking-item {
+        padding: 12px 8px;
     }
 }
 
