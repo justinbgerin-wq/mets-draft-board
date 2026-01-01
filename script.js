@@ -1803,8 +1803,9 @@ class DraftTracker {
         }
     }
 
-    // Rankings view rendering
+    // Rankings view rendering - NEW TWO-COLUMN LAYOUT
     renderRankingsView() {
+        console.log('🎯 renderRankingsView called, current rankings:', this.rankings.length, 'view:', this.rankingsView);
         const container = document.querySelector('.table-container');
 
         // Load rankings data if not already loaded or wrong type
@@ -1832,8 +1833,7 @@ class DraftTracker {
                 return player && (
                     player.name.toLowerCase().includes(term) ||
                     player.position.toLowerCase().includes(term) ||
-                    player.mlbTeam.toLowerCase().includes(term) ||
-                    player.notes.toLowerCase().includes(term)
+                    player.mlbTeam.toLowerCase().includes(term)
                 );
             });
         }
@@ -1845,7 +1845,14 @@ class DraftTracker {
             });
         }
 
-        // Create rankings view HTML
+        // Get available players for the right panel (not in rankings or not drafted)
+        const rankedPlayerIds = new Set(filteredRankings.map(r => r.player_id));
+        const availablePlayers = this.players.filter(player => {
+            // Show all players that aren't in the current rankings OR are drafted (to show with team colors)
+            return !rankedPlayerIds.has(player.id) || player.drafted;
+        });
+
+        // Create rankings view HTML - NEW TWO-COLUMN LAYOUT
         let html = `
             <div class="rankings-controls">
                 <div class="rankings-header">
@@ -1875,11 +1882,15 @@ class DraftTracker {
                     </div>
                 </div>
             </div>
-            <div class="rankings-list" id="rankingsList">
+            <div class="rankings-container">
+                <!-- LEFT COLUMN: Rankings 1-30 -->
+                <div class="rankings-column">
+                    <h3>Rankings</h3>
+                    <div class="rankings-list" id="rankingsList">
         `;
 
         if (filteredRankings.length === 0) {
-            html += '<div class="empty-state"><p>No rankings found. Click "Initialize Rankings" to create a default ranking order.</p></div>';
+            html += '<div class="empty-state"><p>No rankings found.<br>Click "Initialize Rankings" to create a default ranking order.</p></div>';
         } else {
             html += '<div class="rankings-items" id="rankingsItems">';
             filteredRankings.forEach(ranking => {
@@ -1890,16 +1901,11 @@ class DraftTracker {
                     <div class="ranking-item" data-id="${ranking.id}" data-rank="${ranking.rank_index}">
                         <div class="ranking-number">${ranking.rank_index}</div>
                         <div class="ranking-content">
-                            <div class="player-name">
-                                ${this.escapeHtml(player.name)}
-                                ${this.getExternalLinks(player)}
-                            </div>
-                            <div class="player-details">
+                            <div class="ranking-player-name">${this.escapeHtml(player.name)}</div>
+                            <div class="ranking-player-details">
                                 <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
                                 <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
-                                ${player.drafted ? `<span class="fantasy-owner">${this.getOwnerDisplay(player.fantasyOwner)}</span>` : '<span class="draft-status available">Available</span>'}
                             </div>
-                            ${player.notes ? `<div class="notes">${this.escapeHtml(player.notes)}</div>` : ''}
                         </div>
                         <div class="ranking-handle">⋮⋮</div>
                     </div>
@@ -1908,7 +1914,42 @@ class DraftTracker {
             html += '</div>';
         }
 
-        html += '</div>';
+        html += `
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Player Pool -->
+                <div class="player-pool-column">
+                    <h3>Available Players</h3>
+                    <div class="player-pool" id="playerPool">
+        `;
+
+        if (availablePlayers.length === 0) {
+            html += '<div class="empty-state"><p>No available players found.</p></div>';
+        } else {
+            availablePlayers.forEach(player => {
+                const isDrafted = player.drafted;
+                const teamColors = isDrafted ? this.getOwnerColors(player.fantasyOwner) : null;
+
+                html += `
+                    <div class="pool-player-item ${isDrafted ? 'drafted' : ''}" data-id="${player.id}" style="${isDrafted && teamColors ? `background: ${teamColors}; color: #ffffff;` : ''}">
+                        <div class="pool-player-name">${this.escapeHtml(player.name)}</div>
+                        <div class="pool-player-details">
+                            <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
+                            <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
+                            ${isDrafted ? `<span class="fantasy-owner">${this.getOwnerDisplay(player.fantasyOwner)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        html += `
+                    </div>
+                </div>
+            </div>
+        `;
+
         container.innerHTML = html;
 
         // Bind rankings events
