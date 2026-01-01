@@ -562,8 +562,6 @@ class DraftTracker {
     // Rendering
     render() {
         const filteredPlayers = this.getFilteredPlayers();
-        const tbody = document.getElementById('playersTableBody');
-        const emptyState = document.getElementById('emptyState');
 
         if (this.currentView === 'rankings') {
             this.renderRankingsView();
@@ -573,15 +571,19 @@ class DraftTracker {
             // Ensure we have the original table structure when not in special views
             this.ensureTableStructure();
             this.renderTable(filteredPlayers);
-        }
 
-        // Show/hide empty state
-        if (filteredPlayers.length === 0 && this.currentView !== 'by-owner' && this.currentView !== 'rankings') {
-            tbody.style.display = 'none';
-            emptyState.style.display = 'block';
-        } else {
-            tbody.style.display = '';
-            emptyState.style.display = 'none';
+            // Show/hide empty state only for table view
+            const tbody = document.getElementById('playersTableBody');
+            const emptyState = document.getElementById('emptyState');
+            if (tbody && emptyState) {
+                if (filteredPlayers.length === 0) {
+                    tbody.style.display = 'none';
+                    emptyState.style.display = 'block';
+                } else {
+                    tbody.style.display = '';
+                    emptyState.style.display = 'none';
+                }
+            }
         }
     }
 
@@ -1853,41 +1855,39 @@ class DraftTracker {
         });
 
         // Create rankings view HTML - NEW TWO-COLUMN LAYOUT
-        let html = `
-            <div class="rankings-controls">
-                <div class="rankings-header">
-                    <h2>Player Rankings</h2>
-                    <div class="rankings-actions">
-                        <button id="initializeRankingsBtn" class="btn btn-primary">Initialize Rankings</button>
-                        <button id="clearRankingsBtn" class="btn btn-danger">Clear Rankings</button>
-                    </div>
-                </div>
-                <div class="rankings-filters">
-                    <div class="filter-group">
-                        <label for="rankingsTypeSelect">List Type:</label>
-                        <select id="rankingsTypeSelect">
-                            <option value="overall" ${this.rankingsView === 'overall' ? 'selected' : ''}>Overall</option>
-                            <option value="hitter" ${this.rankingsView === 'hitter' ? 'selected' : ''}>Hitters</option>
-                            <option value="pitcher" ${this.rankingsView === 'pitcher' ? 'selected' : ''}>Pitchers</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <input type="text" id="rankingsSearchInput" placeholder="Search players..." value="${this.escapeHtml(this.rankingsSearchTerm)}">
-                    </div>
-                    <div class="filter-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="hideDraftedRankingsToggle" ${this.hideDraftedInRankings ? 'checked' : ''}>
-                            Hide drafted players
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="rankings-container">
-                <!-- LEFT COLUMN: Rankings 1-30 -->
-                <div class="rankings-column">
-                    <h3>Rankings</h3>
-                    <div class="rankings-list" id="rankingsList">
-        `;
+        let html = '<div class="rankings-controls">' +
+            '<div class="rankings-header">' +
+                '<h2>Player Rankings</h2>' +
+                '<div class="rankings-actions">' +
+                    '<button id="initializeRankingsBtn" class="btn btn-primary">Initialize Rankings</button>' +
+                    '<button id="clearRankingsBtn" class="btn btn-danger">Clear Rankings</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="rankings-filters">' +
+                '<div class="filter-group">' +
+                    '<label for="rankingsTypeSelect">List Type:</label>' +
+                    '<select id="rankingsTypeSelect">' +
+                        '<option value="overall"' + (this.rankingsView === 'overall' ? ' selected' : '') + '>Overall</option>' +
+                        '<option value="hitter"' + (this.rankingsView === 'hitter' ? ' selected' : '') + '>Hitters</option>' +
+                        '<option value="pitcher"' + (this.rankingsView === 'pitcher' ? ' selected' : '') + '>Pitchers</option>' +
+                    '</select>' +
+                '</div>' +
+                '<div class="filter-group">' +
+                    '<input type="text" id="rankingsSearchInput" placeholder="Search players..." value="' + this.escapeHtml(this.rankingsSearchTerm || '') + '">' +
+                '</div>' +
+                '<div class="filter-group">' +
+                    '<label class="checkbox-label">' +
+                        '<input type="checkbox" id="hideDraftedRankingsToggle"' + (this.hideDraftedInRankings ? ' checked' : '') + '>' +
+                        'Hide drafted players' +
+                    '</label>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="rankings-container">' +
+            '<!-- LEFT COLUMN: Rankings 1-30 -->' +
+            '<div class="rankings-column">' +
+                '<h3>Rankings</h3>' +
+                '<div class="rankings-list" id="rankingsList">';
 
         if (filteredRankings.length === 0) {
             html += '<div class="empty-state"><p>No rankings found.<br>Click "Initialize Rankings" to create a default ranking order.</p></div>';
@@ -1897,32 +1897,27 @@ class DraftTracker {
                 const player = this.players.find(p => p.id === ranking.player_id);
                 if (!player) return;
 
-                html += `
-                    <div class="ranking-item" data-id="${ranking.id}" data-rank="${ranking.rank_index}">
-                        <div class="ranking-number">${ranking.rank_index}</div>
-                        <div class="ranking-content">
-                            <div class="ranking-player-name">${this.escapeHtml(player.name)}</div>
-                            <div class="ranking-player-details">
-                                <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
-                                <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
-                            </div>
-                        </div>
-                        <div class="ranking-handle">⋮⋮</div>
-                    </div>
-                `;
+                html += '<div class="ranking-item" data-id="' + ranking.id + '" data-rank="' + ranking.rank_index + '">' +
+                    '<div class="ranking-number">' + ranking.rank_index + '</div>' +
+                    '<div class="ranking-content">' +
+                        '<div class="ranking-player-name">' + this.escapeHtml(player.name) + '</div>' +
+                        '<div class="ranking-player-details">' +
+                            '<span class="position-badge">' + this.escapeHtml(player.position || '') + '</span>' +
+                            '<span class="mlb-team">' + this.escapeHtml(player.mlbTeam || '') + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="ranking-handle">⋮⋮</div>' +
+                '</div>';
             });
             html += '</div>';
         }
 
-        html += `
-                    </div>
-                </div>
-
-                <!-- RIGHT COLUMN: Player Pool -->
-                <div class="player-pool-column">
-                    <h3>Available Players</h3>
-                    <div class="player-pool" id="playerPool">
-        `;
+        html += '</div>' +
+            '</div>' +
+            '<!-- RIGHT COLUMN: Player Pool -->' +
+            '<div class="player-pool-column">' +
+                '<h3>Available Players</h3>' +
+                '<div class="player-pool" id="playerPool">';
 
         if (availablePlayers.length === 0) {
             html += '<div class="empty-state"><p>No available players found.</p></div>';
@@ -1931,24 +1926,21 @@ class DraftTracker {
                 const isDrafted = player.drafted;
                 const teamColors = isDrafted ? this.getOwnerColors(player.fantasyOwner) : null;
 
-                html += `
-                    <div class="pool-player-item ${isDrafted ? 'drafted' : ''}" data-id="${player.id}" style="${isDrafted && teamColors ? `background: ${teamColors}; color: #ffffff;` : ''}">
-                        <div class="pool-player-name">${this.escapeHtml(player.name)}</div>
-                        <div class="pool-player-details">
-                            <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
-                            <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
-                            ${isDrafted ? `<span class="fantasy-owner">${this.getOwnerDisplay(player.fantasyOwner)}</span>` : ''}
-                        </div>
-                    </div>
-                `;
+                html += '<div class="pool-player-item' + (isDrafted ? ' drafted' : '') + '" data-id="' + player.id + '"' +
+                    (isDrafted && teamColors ? ' style="background: ' + teamColors + '; color: #ffffff;"' : '') + '>' +
+                    '<div class="pool-player-name">' + this.escapeHtml(player.name) + '</div>' +
+                    '<div class="pool-player-details">' +
+                        '<span class="position-badge">' + this.escapeHtml(player.position || '') + '</span>' +
+                        '<span class="mlb-team">' + this.escapeHtml(player.mlbTeam || '') + '</span>' +
+                        (isDrafted ? '<span class="fantasy-owner">' + this.getOwnerDisplay(player.fantasyOwner) + '</span>' : '') +
+                    '</div>' +
+                '</div>';
             });
         }
 
-        html += `
-                    </div>
-                </div>
-            </div>
-        `;
+        html += '</div>' +
+            '</div>' +
+        '</div>';
 
         container.innerHTML = html;
 
