@@ -901,11 +901,10 @@ class DraftTracker {
             });
         });
 
-        // Player name expandable cards and hover tooltips
+        // Player name expandable cards
         document.querySelectorAll('.player-name').forEach(elem => {
-            // Only add handlers if it's not already editable (to avoid conflicts)
+            // Only add click handler if it's not already editable (to avoid conflicts)
             if (!elem.classList.contains('editable')) {
-                // Click handler for expandable cards
                 elem.addEventListener('click', (e) => {
                     // Don't expand if clicking on star icon
                     if (e.target.classList.contains('star-icon')) {
@@ -917,25 +916,6 @@ class DraftTracker {
                     this.togglePlayerCard(playerId);
                 });
                 elem.style.cursor = 'pointer';
-
-                // Hover tooltip with Baseball Reference iframe
-                let tooltipTimeout;
-                elem.addEventListener('mouseenter', (e) => {
-                    // Clear any existing timeout
-                    clearTimeout(tooltipTimeout);
-
-                    // Set timeout to show tooltip after 500ms hover
-                    tooltipTimeout = setTimeout(() => {
-                        const playerName = elem.dataset.playerName || elem.textContent.trim();
-                        this.showPlayerTooltip(elem, playerName);
-                    }, 500);
-                });
-
-                elem.addEventListener('mouseleave', (e) => {
-                    // Clear timeout and hide tooltip
-                    clearTimeout(tooltipTimeout);
-                    this.hidePlayerTooltip();
-                });
             }
         });
     }
@@ -1825,74 +1805,7 @@ class DraftTracker {
         }
     }
 
-    // Hover tooltip functionality
-    showPlayerTooltip(element, playerName) {
-        // Remove any existing tooltip
-        this.hidePlayerTooltip();
 
-        // Try Fangraphs first (more reliable URLs), fallback to Baseball Reference
-        const fangraphsUrl = this.getFangraphsPlayerUrl(playerName);
-        const statsUrl = fangraphsUrl || `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(playerName)}`;
-        const sourceName = fangraphsUrl ? 'Fangraphs' : 'Baseball Reference';
-
-        // Create tooltip container
-        const tooltip = document.createElement('div');
-        tooltip.className = 'player-tooltip';
-        tooltip.innerHTML = `
-            <div class="player-tooltip-header">
-                <h4>${this.escapeHtml(playerName)}</h4>
-                <button class="tooltip-close-btn" onclick="window.draftTracker.hidePlayerTooltip()">×</button>
-            </div>
-            <div class="player-tooltip-content">
-                <iframe
-                    src="${statsUrl}"
-                    frameborder="0"
-                    width="100%"
-                    height="400"
-                    loading="lazy"
-                    title="${sourceName} - ${this.escapeHtml(playerName)}"
-                ></iframe>
-            </div>
-        `;
-
-        // Position the tooltip near the element
-        const rect = element.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-
-        // Position below the element, centered horizontally
-        let left = rect.left + (rect.width / 2) - 200; // Center, accounting for tooltip width
-        let top = rect.bottom + 10;
-
-        // Ensure tooltip stays within viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        // Adjust horizontal position if needed
-        if (left < 10) left = 10;
-        if (left + 400 > viewportWidth - 10) left = viewportWidth - 410;
-
-        // Adjust vertical position if needed
-        if (top + 450 > viewportHeight - 10) {
-            top = rect.top - 460; // Show above instead
-        }
-
-        tooltip.style.left = left + 'px';
-        tooltip.style.top = top + 'px';
-
-        // Add to body
-        document.body.appendChild(tooltip);
-
-        // Add tooltip class to body to prevent scrolling
-        document.body.classList.add('has-tooltip');
-    }
-
-    hidePlayerTooltip() {
-        const tooltip = document.querySelector('.player-tooltip');
-        if (tooltip) {
-            tooltip.remove();
-        }
-        document.body.classList.remove('has-tooltip');
-    }
 
     // Rankings view rendering - NEW TWO-COLUMN LAYOUT
     renderRankingsView() {
