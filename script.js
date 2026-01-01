@@ -1793,9 +1793,13 @@ class DraftTracker {
     }
 
     closePlayerCard(playerId) {
-        const card = document.querySelector(`.player-card[data-player-id="${playerId}"]`);
-        if (card) {
-            card.closest('tr').remove();
+        // Find and remove the specific player card row
+        const cardRow = document.querySelector('.player-card-row');
+        if (cardRow) {
+            console.log('Removing player card row for player:', playerId);
+            cardRow.remove();
+        } else {
+            console.warn('No player card row found to remove for player:', playerId);
         }
     }
 
