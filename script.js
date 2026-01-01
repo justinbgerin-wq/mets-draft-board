@@ -899,19 +899,19 @@ class DraftTracker {
             });
         });
 
-        // Player name Twitter links
+        // Player name expandable cards
         document.querySelectorAll('.player-name').forEach(elem => {
             // Only add click handler if it's not already editable (to avoid conflicts)
             if (!elem.classList.contains('editable')) {
                 elem.addEventListener('click', (e) => {
-                    // Don't open Twitter if clicking on star icon
+                    // Don't expand if clicking on star icon
                     if (e.target.classList.contains('star-icon')) {
                         return; // Let star icon handle its own click
                     }
 
                     e.stopPropagation();
-                    const playerName = elem.dataset.playerName || elem.textContent.trim();
-                    this.openTwitter(playerName);
+                    const playerId = elem.dataset.id;
+                    this.togglePlayerCard(playerId);
                 });
                 elem.style.cursor = 'pointer';
             }
@@ -1730,6 +1730,73 @@ class DraftTracker {
         document.querySelectorAll('.notes.expanded').forEach(elem => {
             elem.classList.remove('expanded');
         });
+    }
+
+    // Player card expansion functionality
+    togglePlayerCard(playerId) {
+        const existingCard = document.querySelector(`.player-card[data-player-id="${playerId}"]`);
+
+        // If card is already expanded, collapse it
+        if (existingCard) {
+            existingCard.remove();
+            return;
+        }
+
+        // Close any other expanded cards first
+        document.querySelectorAll('.player-card').forEach(card => card.remove());
+
+        // Find the player row and insert card after it
+        const playerRow = document.querySelector(`.player-name[data-id="${playerId}"]`)?.closest('tr');
+        if (!playerRow) return;
+
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) return;
+
+        // Create the expandable card
+        const cardRow = document.createElement('tr');
+        cardRow.className = 'player-card-row';
+        cardRow.innerHTML = `
+            <td colspan="6" class="player-card-cell">
+                <div class="player-card" data-player-id="${playerId}">
+                    <div class="player-card-header">
+                        <div class="player-card-info">
+                            <h3>${this.escapeHtml(player.name)}</h3>
+                            <div class="player-card-details">
+                                <span class="position-badge">${this.escapeHtml(player.position || '')}</span>
+                                <span class="mlb-team">${this.escapeHtml(player.mlbTeam || '')}</span>
+                                ${player.drafted ? `<span class="fantasy-owner">${this.getOwnerDisplay(player.fantasyOwner)}</span>` : '<span class="draft-status available">Available</span>'}
+                            </div>
+                        </div>
+                        <button class="card-close-btn" onclick="window.draftTracker.closePlayerCard('${playerId}')">×</button>
+                    </div>
+                    <div class="player-card-content">
+                        <iframe
+                            src="https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(player.name)}"
+                            frameborder="0"
+                            width="100%"
+                            height="600"
+                            loading="lazy"
+                            title="Baseball Reference - ${this.escapeHtml(player.name)}"
+                        ></iframe>
+                    </div>
+                </div>
+            </td>
+        `;
+
+        // Insert the card row after the player row
+        playerRow.parentNode.insertBefore(cardRow, playerRow.nextSibling);
+
+        // Scroll the card into view
+        setTimeout(() => {
+            cardRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+
+    closePlayerCard(playerId) {
+        const card = document.querySelector(`.player-card[data-player-id="${playerId}"]`);
+        if (card) {
+            card.closest('tr').remove();
+        }
     }
 
     // Rankings view rendering
